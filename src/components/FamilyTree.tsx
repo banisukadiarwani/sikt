@@ -1169,30 +1169,12 @@ export default function FamilyTree({ state, onUpdateState }: FamilyTreeProps) {
             {/* Quick Actions overlay */}
             <div className="absolute top-4 right-4 z-20 flex flex-wrap items-center gap-2 no-print">
               <button 
-                onClick={handleFitView}
-                title="Posisikan Pas di Tengah"
-                className="py-1.5 px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-sm transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
-              >
-                <Maximize className="h-3.5 w-3.5 text-slate-500" />
-                <span className="hidden sm:inline">Posisikan Tengah</span>
-              </button>
-              
-              <button 
                 onClick={handleRecalculateLayout}
                 title="Kalkulasi Ulang Letak Silsilah"
                 className="py-1.5 px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-sm transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
               >
                 <RefreshCw className={`h-3.5 w-3.5 text-slate-500 ${isRecalculating ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">Kalkulasi Tata Letak</span>
-              </button>
-
-              <button 
-                onClick={() => handlePrint(false)}
-                title="Cetak Bagan Silsilah"
-                className="py-1.5 px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-900 rounded-xl shadow-sm transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
-              >
-                <Printer className="h-3.5 w-3.5 text-indigo-500" />
-                <span className="hidden sm:inline">Cetak Silsilah</span>
               </button>
 
               <button 
@@ -1262,15 +1244,6 @@ export default function FamilyTree({ state, onUpdateState }: FamilyTreeProps) {
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-pink-500"></span> Perempuan
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-0.5 w-4 bg-blue-500"></span> Garis Ayah
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-0.5 w-4 bg-pink-500"></span> Garis Ibu
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-0.5 w-4 border-t-2 border-dashed border-red-400 font-bold text-rose-400"></span> Pasangan ❤️
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ import KalenderKeluarga from './components/KalenderKeluarga';
 import GaleriKeluarga from './components/GaleriKeluarga';
 import ArsipDokumen from './components/ArsipDokumen';
 import Settings from './components/Settings';
+import Login from './components/Login';
 import { 
   Home, Users, Landmark, Calendar, Image as ImageIcon, 
   Archive, Settings as SettingsIcon, CloudLightning, RefreshCw, 
@@ -290,7 +291,7 @@ export default function App() {
       {/* User context profile panel at bottom side */}
       <div className="p-4 border-t border-slate-800 bg-slate-950/40 space-y-2">
         <div className="flex items-center gap-2.5">
-          <span className="p-1 rounded bg-indigo-950 text-indigo-400 font-bold text-xs uppercase tracking-wider shrink-0">
+          <span className="p-1 rounded bg-indigo-950 text-indigo-400 font-bold text-[9px] tracking-wider uppercase shrink-0">
             {state.currentUser?.role.substring(0,3) || 'TAMU'}
           </span>
           <div className="truncate">
@@ -301,16 +302,36 @@ export default function App() {
         
         <button 
           onClick={() => {
-            setActiveTab('settings');
+            updateState({
+              ...state,
+              currentUser: null
+            });
             if (isMobile) setMobileMenuOpen(false);
           }}
-          className="w-full py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-bold text-indigo-400 hover:bg-slate-850 hover:text-indigo-300 transition text-center"
+          className="w-full py-1.5 bg-red-950 hover:bg-red-900 border border-red-900/30 rounded-xl text-[10px] font-bold text-red-300 hover:text-red-200 transition text-center flex items-center justify-center gap-1.5"
+          title="Keluar dari sesi akun saat ini"
         >
-          Uji Hak Akses & Peran &rarr;
+          <ShieldAlert className="h-3.5 w-3.5" /> Keluar / Ganti Akun
         </button>
       </div>
     </div>
   );
+
+  // If no user is authenticated, force presentation of the fully loaded multi-login page
+  if (!state.currentUser) {
+    return (
+      <Login 
+        state={state} 
+        onLogin={(user) => {
+          updateState({
+            ...state,
+            currentUser: user
+          });
+          setActiveTab('dashboard');
+        }} 
+      />
+    );
+  }
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans antialiased relative">
@@ -362,35 +383,17 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2 md:gap-3 shrink-0">
-            {/* Quick Access Role Simulation Selector */}
-            <div className="flex items-center gap-1.5 bg-indigo-50 border border-indigo-100 p-1 md:p-1.5 px-2.5 rounded-xl text-[10px] md:text-xs shadow-3xs">
-              <Shield className="h-3.5 w-3.5 text-indigo-600 shrink-0 hidden sm:inline" />
-              <span className="text-[10px] font-bold text-indigo-700 tracking-wider uppercase hidden lg:inline">Simulasi Peran:</span>
-              <select
-                value={state.currentUser?.id || ''}
-                onChange={(e) => {
-                  const selectedUser = state.users.find(u => u.id === e.target.value);
-                  if (selectedUser) {
-                    updateState({
-                      ...state,
-                      currentUser: selectedUser
-                    });
-                  }
-                }}
-                className="bg-transparent border-none font-bold text-indigo-900 focus:outline-none focus:ring-0 text-[10px] md:text-xs py-0 cursor-pointer max-w-[130px] md:max-w-[200px]"
-              >
-                {state.users.map((u) => (
-                  <option key={u.id} value={u.id} className="text-slate-800 font-semibold bg-white">
-                    {u.nama} ({u.role})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {state.currentUser && (
+              <div className="flex items-center gap-1.5 p-1 px-3 bg-emerald-50 border border-emerald-100 rounded-xl text-[10px] md:text-xs">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="font-extrabold text-emerald-800 font-mono tracking-wider uppercase">{state.currentUser.role}</span>
+              </div>
+            )}
 
             <div className="hidden md:flex items-center gap-1.5 text-[10px] md:text-xs font-semibold text-slate-500 font-mono bg-slate-50 border p-1 px-2.5 rounded-xl">
               <span>🕒 UTC:</span>
               <span className="text-slate-700 font-bold block truncate">
-                2026-06-15, 06:15
+                2026-06-15, 08:08
               </span>
             </div>
           </div>

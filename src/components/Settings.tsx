@@ -21,22 +21,11 @@ export default function Settings({
   syncStatus 
 }: SettingsProps) {
   
-  const { users, currentUser, appsScriptUrl } = state;
+  const { appsScriptUrl } = state;
   const [testUrl, setTestUrl] = useState(appsScriptUrl);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isTesting, setIsTesting] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-
-  // Handle active role switching
-  const handleUserChange = (userId: string) => {
-    const selectedUser = users.find(u => u.id === userId);
-    if (selectedUser) {
-      onUpdateState({
-        ...state,
-        currentUser: selectedUser
-      });
-    }
-  };
 
   // Test GAS connection
   const handleTestConnection = async () => {
@@ -65,65 +54,51 @@ export default function Settings({
   return (
     <div className="space-y-6">
       
-      {/* 1. ROLE-BASED ACCESS CONTROL (RBAC) SIMULATION BOX */}
+      {/* 1. KETENTUAN HAK AKSES DAN PERAN SIKT */}
       <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-3xs space-y-4">
         <h2 className="font-extrabold text-slate-850 flex items-center gap-2 text-sm uppercase tracking-wider text-slate-700">
-          <ShieldCheck className="h-5 w-5 text-indigo-600" /> Simulasi Hak Akses (RBAC) SIKT
+          <ShieldCheck className="h-5 w-5 text-indigo-600" /> Hak Akses & Peran Pengguna SIKT
         </h2>
         <p className="text-xs text-slate-500 leading-normal">
-          Menu-menu, formulir, dan tombol aksi (tambah/edit/hapus) diatur penuh oleh hak akses di silsilah. Silih berganti pengguna aktif di bawah ini untuk menguji hak akses masing-masing modul:
+          Aplikasi Sistem Informasi Silsilah Keluarga Terpadu (SIKT) mengimplementasikan Role-Based Access Control (RBAC) untuk mengamankan data silsilah keluarga, pencatatan kas, dan arsip dokumen resmi. Berikut rincian wewenang masing-masing peran:
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {users.map(u => {
-            const isSelected = currentUser?.id === u.id;
-            return (
-              <div
-                key={u.id}
-                onClick={() => handleUserChange(u.id)}
-                className={`p-4 border rounded-xl cursor-pointer hover:border-indigo-500 transition-all text-left flex flex-col justify-between ${isSelected ? 'border-indigo-600 bg-indigo-50/20 ring-1 ring-indigo-500/10' : 'border-slate-100 bg-white'}`}
-              >
-                <div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-slate-800 text-sm">{u.nama}</span>
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                      {isSelected ? 'AKTIF' : ''}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-400 font-mono mt-1">{u.email}</p>
-                </div>
-                
-                <div className="mt-4 pt-2 border-t border-dashed border-slate-100 flex justify-between items-center text-[10px] text-slate-500">
-                  <span>Peran / Role:</span>
-                  <span className="font-bold text-indigo-700">{u.role}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {currentUser && (
-          <div className="p-3.5 bg-indigo-50/50 rounded-xl border border-indigo-100 flex items-center gap-2.5 text-xs text-indigo-900 animate-in fade-in duration-300">
-            <ShieldCheck className="h-4.5 w-4.5 text-indigo-600 shrink-0" />
+          <div className="p-4 border border-indigo-100 bg-indigo-50/10 rounded-xl flex flex-col justify-between">
             <div>
-              <p className="font-bold">🖥️ Simulasi Aktif: <span className="text-indigo-700 font-extrabold">{currentUser.nama}</span> ({currentUser.role})</p>
-              <p className="text-[11px] text-slate-500 mt-0.5 animate-in slide-in-from-left-1 duration-200">
-                {currentUser.role === 'Administrator' && '✓ Anda memiliki akses ADMINISTRATOR. Berwenang penuh mengelola (tambah/edit/hapus) silsilah, kas, agenda, galeri, & arsip.'}
-                {currentUser.role === 'Bendahara' && '✓ Anda memiliki akses BENDAHARA. Berwenang mengelola pembukuan kas, cetak bukti keuangan, membaca dokumen, serta RSVP.'}
-                {currentUser.role === 'Anggota' && '✓ Anda memiliki akses ANGGOTA KELUARGA. Berwenang membaca silsilah & kas, unggah galeri kenangan, dan melakukan RSVP kehadiran.'}
+              <p className="font-extrabold text-indigo-950 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-indigo-600"></span>
+                🛡️ Administrator
+              </p>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Memiliki kendali penuh (CRUD) terhadap silsilah anggota keluarga, agenda kegiatan, mutasi buku kas masuk/keluar, berkas digital, galeri audio/visual, serta pengaturan sinkronisasi database cloud.
               </p>
             </div>
           </div>
-        )}
 
-        {/* Roles details list */}
-        <div className="bg-slate-50 p-4 rounded-xl border border-dashed text-xs text-slate-600 space-y-2">
-          <p className="font-bold">Ketentuan Hak Akses di SIKT:</p>
-          <ul className="list-disc pl-4 space-y-1 text-slate-500">
-            <li><strong>Administrator:</strong> Akses Penuh (CRUD silsilah anggota, agenda kegiatan, kas masuk/keluar, galeri & dokumen).</li>
-            <li><strong>Bendahara:</strong> Akses pembukuan kas (CRUD mutasi kas masuk/keluar, cetak LPJ), membaca silsilah & dokumen, serta RSVP agenda.</li>
-            <li><strong>Anggota:</strong> Membaca silsilah & kas, mengunggah dokumentasi galeri, dan melakukan RSVP kehadiran agenda kegiatan.</li>
-          </ul>
+          <div className="p-4 border border-emerald-100 bg-emerald-50/10 rounded-xl flex flex-col justify-between">
+            <div>
+              <p className="font-extrabold text-emerald-950 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-600"></span>
+                💼 Bendahara
+              </p>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Wewenang penuh untuk mencatat keuangan (buku kas masuk & kas keluar), mengunggah bukti transaksi, dan mencetak laporan keuangan. Memiliki akses baca silsilah & dokumen, serta RSVP agenda.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-4 border border-amber-100 bg-amber-50/10 rounded-xl flex flex-col justify-between">
+            <div>
+              <p className="font-extrabold text-amber-950 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-amber-500"></span>
+                👤 Anggota Keluarga
+              </p>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Akses penelusuran silsilah keluarga, melihat rangkuman saldo kas, mengunggah dokumentasi foto/video kenangan ke album galeri, serta mendaftarkan status RSVP kehadiran agenda keluarga.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
