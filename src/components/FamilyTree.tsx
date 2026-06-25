@@ -23,6 +23,28 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const cleanDateStr = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr.trim();
+  const parts = cleanDateStr.split('-');
+  if (parts.length === 3) {
+    if (parts[0].length === 4) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return cleanDateStr;
+  }
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  } catch (e) {}
+  return dateStr;
+};
+
 // Helper to compute age accurately (at death or present age)
 const computeAge = (birthStr: string, deathStr?: string) => {
   if (!birthStr) return 0;
@@ -120,7 +142,7 @@ const FamilyMemberNode = React.memo(({ data }: NodeProps<any>) => {
           : 'border-slate-200 bg-white text-slate-800 hover:border-slate-400 hover:shadow-md'
       }`}
       style={{ 
-        width: '230px', 
+        width: '195px', 
         height: '96px',
         cursor: 'pointer'
       }}
@@ -652,11 +674,11 @@ export default function FamilyTree({ state, onUpdateState }: FamilyTreeProps) {
   }, [activeMember, anggota]);
 
   // Spacing configurations
-  const nodeWidth = 230;
+  const nodeWidth = 195;
   const nodeHeight = 96;
   const genHeightSpacing = 220; // vertical distance between generations
   const coupleGap = 35;         // Spouse items are mepet (35px gap)
-  const childGap = 60;          // Gap between children of the same parent (user requested around 60px)
+  const childGap = 50;          // Gap between children of the same parent (user requested around 50px)
 
   const familyTreeLayout = useMemo(() => {
     const memberCoords: Record<string, { x: number; y: number }> = {};
@@ -1377,7 +1399,7 @@ export default function FamilyTree({ state, onUpdateState }: FamilyTreeProps) {
                   <input 
                     type="text" 
                     required
-                    placeholder="Contoh: Andi Effendi"
+                    placeholder="Contoh: Andi Sukadi Arwani"
                     value={formFields.nama}
                     onChange={(e) => setFormFields({...formFields, nama: e.target.value})}
                     className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-emerald-500"
@@ -1786,7 +1808,7 @@ export default function FamilyTree({ state, onUpdateState }: FamilyTreeProps) {
                   <div>
                     <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">Kelahiran</span>
                     <strong className="text-slate-800">{activeMember.tempatLahir}</strong>
-                    <span className="block text-slate-500">{new Date(activeMember.tanggalLahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                    <span className="block text-slate-500">{formatDate(activeMember.tanggalLahir)}</span>
                   </div>
                 </div>
 
@@ -1796,7 +1818,7 @@ export default function FamilyTree({ state, onUpdateState }: FamilyTreeProps) {
                     <div>
                       <span className="text-[10px] text-red-400 block font-semibold uppercase tracking-wider">Meninggal Dunia</span>
                       <strong className="text-red-800">Wafat pada</strong>
-                      <span className="block text-red-700">{new Date(activeMember.tanggalWafat).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                      <span className="block text-red-700">{formatDate(activeMember.tanggalWafat)}</span>
                     </div>
                   </div>
                 )}

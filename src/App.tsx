@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SIKTState, User } from './types';
-import { getLocalState, saveLocalState, pullFromGoogleSheets, pushToGoogleSheets } from './services/api';
+import { getLocalState, saveLocalState, pullFromGoogleSheets, pushToGoogleSheets, GUEST_USER } from './services/api';
 import Dashboard from './components/Dashboard';
 import FamilyTree from './components/FamilyTree';
 import KasKeluarga from './components/KasKeluarga';
@@ -13,14 +13,22 @@ import {
   Home, Users, Landmark, Calendar, Image as ImageIcon, 
   Archive, Settings as SettingsIcon, CloudLightning, RefreshCw, 
   Sparkles, CheckCircle2, AlertTriangle, ShieldAlert,
-  Menu, X, Shield, ShieldCheck
+  Menu, X, Shield, ShieldCheck, LogIn, LogOut
 } from 'lucide-react';
 
 export default function App() {
   const [state, setState] = useState<SIKTState>(getLocalState);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   
+  // Route Guard: Guest cannot access admin page (settings)
+  useEffect(() => {
+    if (state.currentUser?.role === 'Guest' && activeTab === 'settings') {
+      setActiveTab('dashboard');
+    }
+  }, [state.currentUser, activeTab]);
+
   // Sync Status helpers
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
@@ -162,7 +170,7 @@ export default function App() {
             <span className="p-2 bg-emerald-600 rounded-xl text-white font-black tracking-widest text-base shadow-sm">SIKT</span>
             <div>
               <h1 className="font-extrabold text-slate-100 text-sm tracking-tight leading-none">SIK Terpadu</h1>
-              <p className="text-[10px] text-emerald-400 font-semibold tracking-wider uppercase mt-1">Keluarga Effendi</p>
+              <p className="text-[10px] text-emerald-400 font-semibold tracking-wider uppercase mt-1">Keluarga Sukadi Arwani</p>
             </div>
           </div>
           {isMobile && (
@@ -176,33 +184,35 @@ export default function App() {
         </div>
 
         {/* Connected Webapp Indicator Overlay */}
-        {state.appsScriptUrl ? (
-          <div className="mx-4 mt-4 p-3 bg-slate-950/80 rounded-xl border border-emerald-900/50 flex items-center gap-2 text-[11px]">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-emerald-300 font-semibold truncate flex-1 block">Database Cloud Aktif</span>
-            <button 
-              onClick={handleManualSyncPull}
-              disabled={isSyncing}
-              className="p-1 hover:bg-slate-800 rounded transition"
-              title="Sinkron ulang data"
-            >
-              <RefreshCw className={`h-3 w-3 text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        ) : (
-          <div className="mx-4 mt-4 p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center gap-2 text-[11px]">
-            <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-            <span className="text-slate-400 truncate flex-1 font-medium collapse-overflow">Database Lokal Aktif</span>
-            <button 
-              onClick={() => {
-                setActiveTab('settings');
-                if (isMobile) setMobileMenuOpen(false);
-              }}
-              className="text-[10px] text-indigo-400 font-bold hover:underline shrink-0"
-            >
-              Atur &rarr;
-            </button>
-          </div>
+        {state.currentUser?.role === 'Administrator' && (
+          state.appsScriptUrl ? (
+            <div className="mx-4 mt-4 p-3 bg-slate-950/80 rounded-xl border border-emerald-900/50 flex items-center gap-2 text-[11px]">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-emerald-300 font-semibold truncate flex-1 block">Database Cloud Aktif</span>
+              <button 
+                onClick={handleManualSyncPull}
+                disabled={isSyncing}
+                className="p-1 hover:bg-slate-800 rounded transition"
+                title="Sinkron ulang data"
+              >
+                <RefreshCw className={`h-3 w-3 text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+          ) : (
+            <div className="mx-4 mt-4 p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center gap-2 text-[11px]">
+              <span className="h-2 w-2 rounded-full bg-amber-500"></span>
+              <span className="text-slate-400 truncate flex-1 font-medium collapse-overflow">Database Lokal Aktif</span>
+              <button 
+                onClick={() => {
+                  setActiveTab('settings');
+                  if (isMobile) setMobileMenuOpen(false);
+                }}
+                className="text-[10px] text-indigo-400 font-bold hover:underline shrink-0"
+              >
+                Atur &rarr;
+              </button>
+            </div>
+          )
         )}
 
         {/* Nav groups clickable links */}
@@ -275,15 +285,17 @@ export default function App() {
           </button>
 
           {/* Settings Button */}
-          <button
-            onClick={() => {
-              setActiveTab('settings');
-              if (isMobile) setMobileMenuOpen(false);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'settings' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950' : 'hover:bg-slate-850 hover:text-slate-100 text-slate-400'}`}
-          >
-            <SettingsIcon className="h-4.5 w-4.5" /> Integrasi & Setup
-          </button>
+          {state.currentUser?.role === 'Administrator' && (
+            <button
+              onClick={() => {
+                setActiveTab('settings');
+                if (isMobile) setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'settings' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950' : 'hover:bg-slate-850 hover:text-slate-100 text-slate-400'}`}
+            >
+              <SettingsIcon className="h-4.5 w-4.5" /> Integrasi & Setup
+            </button>
+          )}
 
         </nav>
       </div>
@@ -292,30 +304,64 @@ export default function App() {
       <div className="p-4 border-t border-slate-800 bg-slate-950/40 space-y-2">
         <div className="flex items-center gap-2.5">
           <span className="p-1 rounded bg-indigo-950 text-indigo-400 font-bold text-[9px] tracking-wider uppercase shrink-0">
-            {state.currentUser?.role.substring(0,3) || 'TAMU'}
+            {state.currentUser?.role === 'Administrator' ? 'ADM' : 'GUEST'}
           </span>
           <div className="truncate">
             <p className="text-xs font-black text-slate-100 truncate">{state.currentUser?.nama || 'Tamu Keluarga'}</p>
-            <p className="text-[10px] text-slate-500 font-mono truncate">{state.currentUser?.email}</p>
+            <p className="text-[10px] text-slate-500 font-mono truncate">{state.currentUser?.email || 'guest@keluarga.com'}</p>
           </div>
         </div>
         
-        <button 
-          onClick={() => {
-            updateState({
-              ...state,
-              currentUser: null
-            });
-            if (isMobile) setMobileMenuOpen(false);
-          }}
-          className="w-full py-1.5 bg-red-950 hover:bg-red-900 border border-red-900/30 rounded-xl text-[10px] font-bold text-red-300 hover:text-red-200 transition text-center flex items-center justify-center gap-1.5"
-          title="Keluar dari sesi akun saat ini"
-        >
-          <ShieldAlert className="h-3.5 w-3.5" /> Keluar / Ganti Akun
-        </button>
+        {state.currentUser?.role === 'Guest' ? (
+          <button 
+            onClick={() => {
+              setShowLogin(true);
+              if (isMobile) setMobileMenuOpen(false);
+            }}
+            className="w-full py-1.5 bg-emerald-900 hover:bg-emerald-800 border border-emerald-850 rounded-xl text-[10px] font-bold text-emerald-200 hover:text-emerald-100 transition text-center flex items-center justify-center gap-1.5 cursor-pointer"
+            title="Masuk sebagai Administrator"
+          >
+            <LogIn className="h-3.5 w-3.5" /> Login Administrator
+          </button>
+        ) : (
+          <button 
+            onClick={() => {
+              updateState({
+                ...state,
+                currentUser: GUEST_USER
+              });
+              if (isMobile) setMobileMenuOpen(false);
+              setActiveTab('dashboard');
+            }}
+            className="w-full py-1.5 bg-red-950 hover:bg-red-900 border border-red-900/30 rounded-xl text-[10px] font-bold text-red-300 hover:text-red-200 transition text-center flex items-center justify-center gap-1.5 cursor-pointer"
+            title="Keluar dari sesi Administrator"
+          >
+            <LogOut className="h-3.5 w-3.5" /> Keluar Admin (Logout)
+          </button>
+        )}
       </div>
     </div>
   );
+
+  // If showLogin is true, show the login page
+  if (showLogin) {
+    return (
+      <Login 
+        state={state} 
+        onLogin={(user) => {
+          updateState({
+            ...state,
+            currentUser: user
+          });
+          setShowLogin(false);
+          setActiveTab('dashboard');
+        }} 
+        onCancel={() => {
+          setShowLogin(false);
+        }}
+      />
+    );
+  }
 
   // If no user is authenticated, force presentation of the fully loaded multi-login page
   if (!state.currentUser) {
@@ -329,6 +375,12 @@ export default function App() {
           });
           setActiveTab('dashboard');
         }} 
+        onCancel={() => {
+          updateState({
+            ...state,
+            currentUser: GUEST_USER
+          });
+        }}
       />
     );
   }
@@ -375,7 +427,7 @@ export default function App() {
               {activeTab === 'dashboard' && 'Beranda SIKT'}
               {activeTab === 'silsilah' && 'Visual Silsilah Keluarga'}
               {activeTab === 'kas' && 'Pencatatan & Laporan Kas'}
-              {activeTab === 'agenda' && 'Kalender & RSVP Acara'}
+              {activeTab === 'agenda' && 'Kalender & Agenda Acara'}
               {activeTab === 'galeri' && 'Kenangan & Galeri Acara'}
               {activeTab === 'dokumen' && 'Arsip Berkas Digital'}
               {activeTab === 'settings' && 'Pengaturan Setup & Hak Akses'}
@@ -383,11 +435,30 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2 md:gap-3 shrink-0">
-            {state.currentUser && (
-              <div className="flex items-center gap-1.5 p-1 px-3 bg-emerald-50 border border-emerald-100 rounded-xl text-[10px] md:text-xs">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="font-extrabold text-emerald-800 font-mono tracking-wider uppercase">{state.currentUser.role}</span>
+            {state.currentUser?.role === 'Guest' ? (
+              <div className="flex items-center gap-1.5 p-1 px-3 bg-slate-150/80 border border-slate-200 rounded-xl text-[10px] md:text-xs">
+                <span className="h-2 w-2 rounded-full bg-slate-400"></span>
+                <span className="font-extrabold text-slate-700 uppercase">Mode Tamu</span>
               </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-1.5 p-1 px-3 bg-emerald-50 border border-emerald-100 rounded-xl text-[10px] md:text-xs">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="font-extrabold text-emerald-800 uppercase">Administrator</span>
+                </div>
+                <button
+                  onClick={() => {
+                    updateState({
+                      ...state,
+                      currentUser: GUEST_USER
+                    });
+                    setActiveTab('dashboard');
+                  }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-red-50 border border-red-200 hover:bg-red-100 text-red-750 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider transition cursor-pointer"
+                >
+                  <LogOut className="h-3.5 w-3.5" /> Keluar Admin
+                </button>
+              </>
             )}
 
             <div className="hidden md:flex items-center gap-1.5 text-[10px] md:text-xs font-semibold text-slate-500 font-mono bg-slate-50 border p-1 px-2.5 rounded-xl">
@@ -401,7 +472,7 @@ export default function App() {
 
         {/* Tab components display switcher container */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50/50">
-          {activeTab === 'dashboard' && <Dashboard state={state} setActiveTab={setActiveTab} />}
+          {activeTab === 'dashboard' && <Dashboard state={state} onUpdateState={updateState} setActiveTab={setActiveTab} onShowLogin={() => setShowLogin(true)} />}
           {activeTab === 'silsilah' && <FamilyTree state={state} onUpdateState={updateState} />}
           {activeTab === 'kas' && <KasKeluarga state={state} onUpdateState={updateState} />}
           {activeTab === 'agenda' && <KalenderKeluarga state={state} onUpdateState={updateState} />}

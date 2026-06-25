@@ -3,6 +3,16 @@ import { SIKTState, KasMasuk, KasKeluar } from '../types';
 import { Plus, TrendingUp, TrendingDown, Receipt, Calendar, Filter, FileText, Printer, Check, Search, X } from 'lucide-react';
 import { getCleanDriveUrl } from '../services/api';
 
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const cleanDateStr = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+  const parts = cleanDateStr.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return dateStr;
+};
+
 interface KasKeluargaProps {
   state: SIKTState;
   onUpdateState: (newState: SIKTState) => void;
@@ -10,7 +20,7 @@ interface KasKeluargaProps {
 
 export default function KasKeluarga({ state, onUpdateState }: KasKeluargaProps) {
   const { kasMasuk, kasKeluar, anggota } = state;
-  const isWritable = state.currentUser?.role === 'Administrator' || state.currentUser?.role === 'Bendahara';
+  const isWritable = state.currentUser?.role === 'Administrator';
 
   // UI state
   const [activeSubTab, setActiveSubTab] = useState<'masuk' | 'keluar' | 'laporan'>('masuk');
@@ -100,7 +110,7 @@ export default function KasKeluarga({ state, onUpdateState }: KasKeluargaProps) 
       sumber: formMasuk.sumber,
       nominal: parseFloat(formMasuk.nominal) || 0,
       keterangan: formMasuk.keterangan,
-      bukti: formMasuk.bukti || 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&w=300&q=80',
+      bukti: formMasuk.bukti || '',
     };
 
     onUpdateState({
@@ -126,7 +136,7 @@ export default function KasKeluarga({ state, onUpdateState }: KasKeluargaProps) 
       kategori: formKeluar.kategori,
       nominal: parseFloat(formKeluar.nominal) || 0,
       keterangan: formKeluar.keterangan,
-      bukti: formKeluar.bukti || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=300&q=80',
+      bukti: formKeluar.bukti || '',
     };
 
     onUpdateState({
@@ -307,7 +317,7 @@ export default function KasKeluarga({ state, onUpdateState }: KasKeluargaProps) 
             <table className="w-full text-left border-collapse text-sm text-slate-600">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3 px-4">Tanggal Tarikh</th>
+                  <th className="py-3 px-4">Tanggal</th>
                   <th className="py-3 px-4">Sila Kategori</th>
                   <th className="py-3 px-4">Sumber / Penyumbang</th>
                   <th className="py-3 px-4">Keterangan Catatan</th>
@@ -319,7 +329,7 @@ export default function KasKeluarga({ state, onUpdateState }: KasKeluargaProps) 
                 {filteredMasuk.length > 0 ? (
                   filteredMasuk.map(item => (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition">
-                      <td className="py-3.5 px-4 font-mono text-xs">{item.tanggal}</td>
+                      <td className="py-3.5 px-4 font-mono text-xs">{formatDate(item.tanggal)}</td>
                       <td className="py-3.5 px-4">
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-100">
                           {item.kategori}
@@ -360,7 +370,7 @@ export default function KasKeluarga({ state, onUpdateState }: KasKeluargaProps) 
             <table className="w-full text-left border-collapse text-sm text-slate-600">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3 px-4">Tanggal Tarikh</th>
+                  <th className="py-3 px-4">Tanggal</th>
                   <th className="py-3 px-4">Sila Kategori</th>
                   <th className="py-3 px-4">Keterangan Catatan</th>
                   <th className="py-3 px-4 text-right">Nominal Jumlah</th>
@@ -371,7 +381,7 @@ export default function KasKeluarga({ state, onUpdateState }: KasKeluargaProps) 
                 {filteredKeluar.length > 0 ? (
                   filteredKeluar.map(item => (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition">
-                      <td className="py-3.5 px-4 font-mono text-xs">{item.tanggal}</td>
+                      <td className="py-3.5 px-4 font-mono text-xs">{formatDate(item.tanggal)}</td>
                       <td className="py-3.5 px-4">
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-800 border border-rose-100">
                           {item.kategori}
@@ -461,14 +471,14 @@ export default function KasKeluarga({ state, onUpdateState }: KasKeluargaProps) 
               <div className="space-y-12">
                 <p>Dilaporkan Oleh,</p>
                 <div>
-                  <p className="font-bold underline">Dewi Effendi</p>
+                  <p className="font-bold underline">Dewi Sukadi Arwani</p>
                   <p className="text-slate-400">Bendahara Keluarga</p>
                 </div>
               </div>
               <div className="space-y-12">
                 <p>Mengetahui,</p>
                 <div>
-                  <p className="font-bold underline">Budi Effendi</p>
+                  <p className="font-bold underline">Budi Sukadi Arwani</p>
                   <p className="text-slate-400">Administrator Utama SIKT</p>
                 </div>
               </div>
@@ -482,7 +492,7 @@ export default function KasKeluarga({ state, onUpdateState }: KasKeluargaProps) 
         <center className="space-y-1 border-b-2 pb-4">
           <h1 className="text-2xl font-black tracking-widest">SISTEM INFORMASI KELUARGA TERPADU (SIKT)</h1>
           <p className="text-sm font-bold uppercase tracking-wider">Laporan Pertanggungjawaban Buku Keuangan Kas Keluarga</p>
-          <p className="text-xs text-slate-500">Dicetak pada tanggal: {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+          <p className="text-xs text-slate-500">Dicetak pada tanggal: {formatDate(new Date().toISOString())}</p>
         </center>
 
         <div className="grid grid-cols-3 gap-4 border p-4 bg-slate-50 rounded">
@@ -517,7 +527,7 @@ export default function KasKeluarga({ state, onUpdateState }: KasKeluargaProps) 
               .sort((a,b) => b.tanggal.localeCompare(a.tanggal))
               .map(item => (
                 <tr key={item.id} className="border-b hover:bg-slate-50/50">
-                  <td className="p-2 font-mono">{item.tanggal}</td>
+                  <td className="p-2 font-mono">{formatDate(item.tanggal)}</td>
                   <td className="p-2 uppercase font-medium">{item.kategori}</td>
                   <td className="p-2">{item.keterangan} ({item.sumber || 'Operasional'})</td>
                   <td className={`p-2 text-right font-mono font-bold ${item.type === 'masuk' ? 'text-emerald-700' : 'text-rose-700'}`}>
@@ -533,14 +543,14 @@ export default function KasKeluarga({ state, onUpdateState }: KasKeluargaProps) 
           <div className="space-y-14">
             <p>Dilaporkan Oleh,</p>
             <div>
-              <p className="font-bold underline">Dewi Effendi</p>
+              <p className="font-bold underline">Dewi Sukadi Arwani</p>
               <p className="text-slate-400">Bendahara Keluarga</p>
             </div>
           </div>
           <div className="space-y-14">
             <p>Mengetahui,</p>
             <div>
-              <p className="font-bold underline">Budi Effendi</p>
+              <p className="font-bold underline">Budi Sukadi Arwani</p>
               <p className="text-slate-400">Administrator Utama SIKT</p>
             </div>
           </div>

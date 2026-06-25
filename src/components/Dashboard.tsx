@@ -1,14 +1,68 @@
-import React, { useMemo } from 'react';
-import { SIKTState, AnggotaKeluarga } from '../types';
-import { Users, Landmark, Calendar, Image as ImageIcon, Archive, TrendingUp, Sparkles, Heart, Cake, Skull, Info } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { SIKTState, AnggotaKeluarga, CustomMilestone } from '../types';
+import { Users, Landmark, Calendar, Image as ImageIcon, Archive, TrendingUp, Sparkles, Heart, Cake, Skull, Info, Plus, Trash2, X, Pencil, LogIn, LogOut } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const cleanDateStr = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr.trim();
+  const parts = cleanDateStr.split('-');
+  if (parts.length === 3) {
+    if (parts[0].length === 4) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return cleanDateStr;
+  }
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  } catch (e) {}
+  return dateStr;
+};
+
+const DEFAULT_CUSTOM_MILESTONES: CustomMilestone[] = [
+  {
+    id: 'm1',
+    tanggal: '1967-08-24',
+    tipe: 'Pernikahan',
+    judul: 'Pernikahan Emas Rustam Sukadi Arwani & Siti Aminah',
+    deskripsi: 'Awal mula berdirinya keluarga besar Sukadi Arwani, dilangsungkan dengan khidmat di kota Solo.'
+  },
+ 
+];
+
+const getMilestoneBadge = (tipe: string) => {
+  switch (tipe) {
+    case 'Kelahiran':
+      return <span className="p-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">Lahir</span>;
+    case 'Wafat':
+      return <span className="p-1.5 rounded-full bg-stone-100 text-stone-700 text-xs font-semibold">Wafat</span>;
+    case 'Pernikahan':
+      return <span className="p-1.5 rounded-full bg-pink-100 text-pink-700 text-xs font-semibold">Nikah</span>;
+    case 'Pindah Rumah':
+      return <span className="p-1.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">Pindah</span>;
+    case 'Beli Rumah':
+      return <span className="p-1.5 rounded-full bg-sky-100 text-sky-700 text-xs font-semibold">Beli Rumah</span>;
+    case 'Milestone':
+      return <span className="p-1.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Milestone</span>;
+    default:
+      return <span className="p-1.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">Lainnya</span>;
+  }
+};
 
 interface DashboardProps {
   state: SIKTState;
+  onUpdateState?: (newState: SIKTState) => void;
   setActiveTab: (tab: string) => void;
+  onShowLogin?: () => void;
 }
 
-export default function Dashboard({ state, setActiveTab }: DashboardProps) {
+export default function Dashboard({ state, onUpdateState, setActiveTab, onShowLogin }: DashboardProps) {
   const { anggota, kasMasuk, kasKeluar, agenda, galeri, dokumen } = state;
 
   // 1. Calculations: Total Members
@@ -74,18 +128,7 @@ export default function Dashboard({ state, setActiveTab }: DashboardProps) {
     return sorted.length > 0 ? sorted[0] : null;
   }, [agenda]);
 
-  // 4. RSVP stats for the next agenda item
-  const rsvpStats = useMemo(() => {
-    if (!upcomingAgenda) return { hadir: 0, rsvp: 0, total: 0 };
-    const peserta = state.pesertaAcara.filter(p => p.agendaId === upcomingAgenda.id);
-    const hadir = peserta.filter(p => p.statusHadir === 'Hadir').length;
-    const rsvp = peserta.filter(p => p.statusHadir !== 'Belum RSVP').length;
-    return {
-      hadir,
-      rsvp,
-      total: peserta.length || anggota.length
-    };
-  }, [upcomingAgenda, state.pesertaAcara, anggota]);
+
 
   // 5. Monthly Cashflow Data for Chart
   const financialChartData = useMemo(() => {
@@ -140,12 +183,125 @@ export default function Dashboard({ state, setActiveTab }: DashboardProps) {
 
   const COLORS = ['#0284c7', '#ec4899'];
 
+  const isWritable = state.currentUser?.role === 'Administrator';
+
+  // State for Custom Milestones
+  const [isAddingMilestone, setIsAddingMilestone] = useState(false);
+  const [formTanggal, setFormTanggal] = useState('');
+  const [formTipe, setFormTipe] = useState<'Pernikahan' | 'Pindah Rumah' | 'Beli Rumah' | 'Milestone' | 'Lainnya'>('Pernikahan');
+  const [formJudul, setFormJudul] = useState('');
+  const [formDeskripsi, setFormDeskripsi] = useState('');
+
+  // State for Editing Milestones
+  const [editingMilestone, setEditingMilestone] = useState<CustomMilestone | null>(null);
+  const [editTanggal, setEditTanggal] = useState('');
+  const [editTipe, setEditTipe] = useState<'Pernikahan' | 'Pindah Rumah' | 'Beli Rumah' | 'Milestone' | 'Lainnya'>('Pernikahan');
+  const [editJudul, setEditJudul] = useState('');
+  const [editDeskripsi, setEditDeskripsi] = useState('');
+
+  const customMilestones = (state.customMilestones !== undefined && state.customMilestones !== null
+    ? state.customMilestones
+    : DEFAULT_CUSTOM_MILESTONES).filter(m => m.id !== 'm3' && m.id !== 'm2' && m.judul !== 'Pembelian Rumah Kebagusan' && !m.judul.includes('Kebagusan'));
+  const deletedMilestoneIds = state.deletedMilestoneIds !== undefined && state.deletedMilestoneIds !== null
+    ? state.deletedMilestoneIds
+    : [];
+
+  const handleAddMilestone = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onUpdateState) return;
+
+    const newMilestone: CustomMilestone = {
+      id: `m-custom-${Date.now()}`,
+      tanggal: formTanggal,
+      tipe: formTipe,
+      judul: formJudul,
+      deskripsi: formDeskripsi
+    };
+
+    onUpdateState({
+      ...state,
+      customMilestones: [...customMilestones, newMilestone]
+    });
+
+    // Reset Form
+    setFormTanggal('');
+    setFormTipe('Pernikahan');
+    setFormJudul('');
+    setFormDeskripsi('');
+    setIsAddingMilestone(false);
+  };
+
+  const handleDeleteMilestone = (id: string) => {
+    if (!onUpdateState) return;
+    if (!window.confirm('Apakah Anda yakin ingin menghapus milestone ini dari linimasa?')) return;
+
+    // We check if it is a custom milestone (either newly added or default custom ones)
+    const isCustom = id.startsWith('m-custom-') || ['m1', 'm2', 'm3'].includes(id);
+    const updatedDeletedIds = [...deletedMilestoneIds, id];
+
+    if (isCustom) {
+      // Remove directly from customMilestones list and also add to deletedMilestoneIds for extra robustness
+      const updatedCustom = customMilestones.filter(m => m.id !== id);
+      onUpdateState({
+        ...state,
+        customMilestones: updatedCustom,
+        deletedMilestoneIds: updatedDeletedIds
+      });
+    } else {
+      // Standard birthday or death milestone, add to deletedMilestoneIds list to hide it
+      onUpdateState({
+        ...state,
+        deletedMilestoneIds: updatedDeletedIds
+      });
+    }
+  };
+
+  const handleStartEdit = (m: CustomMilestone) => {
+    setEditingMilestone(m);
+    setEditTanggal(m.tanggal);
+    setEditTipe(m.tipe);
+    setEditJudul(m.judul);
+    setEditDeskripsi(m.deskripsi);
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onUpdateState || !editingMilestone) return;
+
+    const updatedCustom = customMilestones.map(m => {
+      if (m.id === editingMilestone.id) {
+        return {
+          ...m,
+          tanggal: editTanggal,
+          tipe: editTipe,
+          judul: editJudul,
+          deskripsi: editDeskripsi
+        };
+      }
+      return m;
+    });
+
+    onUpdateState({
+      ...state,
+      customMilestones: updatedCustom
+    });
+
+    setEditingMilestone(null);
+  };
+
+  const customMilestoneMap = useMemo(() => {
+    const map = new Map<string, CustomMilestone>();
+    customMilestones.forEach(m => map.set(m.id, m));
+    return map;
+  }, [customMilestones]);
+
   // 7. Timeline events
   const timelineEvents = useMemo(() => {
     interface TimelineItem {
+      id: string;
       tanggal: string;
       tahun: string;
-      tipe: 'Kelahiran' | 'Pernikahan' | 'Wafat' | 'Pindah Rumah' | 'Milestone';
+      tipe: 'Kelahiran' | 'Pernikahan' | 'Wafat' | 'Pindah Rumah' | 'Beli Rumah' | 'Milestone' | 'Lainnya';
       icon: React.ReactNode;
       judul: string;
       deskripsi: string;
@@ -158,57 +314,46 @@ export default function Dashboard({ state, setActiveTab }: DashboardProps) {
       if (a.tanggalLahir) {
         const birthYear = a.tanggalLahir.split('-')[0];
         items.push({
+          id: `birth-${a.id}`,
           tanggal: a.tanggalLahir,
           tahun: birthYear,
           tipe: 'Kelahiran',
-          icon: <span className="p-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">Lahir</span>,
+          icon: getMilestoneBadge('Kelahiran'),
           judul: `Kelahiran ${a.nama}`,
-          deskripsi: `Lahir di ${a.tempatLahir} pada ${new Date(a.tanggalLahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`
+          deskripsi: `Lahir di ${a.tempatLahir} pada tanggal ${formatDate(a.tanggalLahir)}`
         });
       }
       if (a.statusHidup === 'Wafat' && a.tanggalWafat) {
         const deathYear = a.tanggalWafat.split('-')[0];
         items.push({
+          id: `death-${a.id}`,
           tanggal: a.tanggalWafat,
           tahun: deathYear,
           tipe: 'Wafat',
-          icon: <span className="p-1.5 rounded-full bg-stone-100 text-stone-700 text-xs font-semibold">Wafat</span>,
+          icon: getMilestoneBadge('Wafat'),
           judul: `Wafatnya ${a.nama}`,
-          deskripsi: `Wafat pada tanggal ${new Date(a.tanggalWafat).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`
+          deskripsi: `Wafat pada tanggal ${formatDate(a.tanggalWafat)}`
         });
       }
     });
 
-    // Static iconic family weddings / milestone events based on our seeds
-    items.push({
-      tanggal: '1967-08-24',
-      tahun: '1967',
-      tipe: 'Pernikahan',
-      icon: <span className="p-1.5 rounded-full bg-pink-100 text-pink-700 text-xs font-semibold">Nikah</span>,
-      judul: 'Pernikahan Emas Rustam Effendi & Siti Aminah',
-      deskripsi: 'Awal mula berdirinya keluarga besar Effendi, dilangsungkan dengan khidmat di kota Solo.'
+    // Custom milestones
+    customMilestones.forEach(m => {
+      const year = m.tanggal.split('-')[0] || '';
+      items.push({
+        id: m.id,
+        tanggal: m.tanggal,
+        tahun: year,
+        tipe: m.tipe,
+        icon: getMilestoneBadge(m.tipe),
+        judul: m.judul,
+        deskripsi: m.deskripsi
+      });
     });
 
-    items.push({
-      tanggal: '1994-06-12',
-      tahun: '1994',
-      tipe: 'Pernikahan',
-      icon: <span className="p-1.5 rounded-full bg-pink-100 text-pink-700 text-xs font-semibold">Nikah</span>,
-      judul: 'Pernikahan Budi Effendi & Rina Kartika',
-      deskripsi: 'Pernikahan anak sulung keluarga besar Rustam Effendi di Bandung.'
-    });
-
-    items.push({
-      tanggal: '2012-05-10',
-      tahun: '2012',
-      tipe: 'Pindah Rumah',
-      icon: <span className="p-1.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">Rumah</span>,
-      judul: 'Pembelian Rumah Kebagusan',
-      deskripsi: 'Keluarga Budi Effendi pindah domisili dari Yogyakarta ke Kebagusan, Jakarta Selatan.'
-    });
-
-    return items.sort((a, b) => b.tanggal.localeCompare(a.tanggal)).slice(0, 7);
-  }, [anggota]);
+    const filtered = items.filter(item => !deletedMilestoneIds.includes(item.id));
+    return filtered.sort((a, b) => b.tanggal.localeCompare(a.tanggal)).slice(0, 10);
+  }, [anggota, customMilestones, deletedMilestoneIds]);
 
   return (
     <div className="space-y-6">
@@ -238,6 +383,28 @@ export default function Dashboard({ state, setActiveTab }: DashboardProps) {
             >
               <Users className="h-4.5 w-4.5 text-emerald-100" /> Buka Silsilah Keluarga
             </button>
+
+            {state.currentUser?.role === 'Administrator' ? (
+              <button 
+                onClick={() => {
+                  if (onUpdateState) {
+                    onUpdateState({
+                      ...state,
+                      currentUser: {
+                        id: 'guest',
+                        nama: 'Tamu (Guest)',
+                        email: 'guest@keluarga.com',
+                        role: 'Guest',
+                        status: 'Aktif'
+                      }
+                    });
+                  }
+                }}
+                className="px-5 py-2.5 bg-red-650/80 hover:bg-red-600 text-white font-black text-xs sm:text-sm rounded-xl border border-red-500/20 hover:border-red-400/40 transform hover:-translate-y-0.5 transition duration-200 flex items-center gap-2 cursor-pointer"
+              >
+                <LogOut className="h-4.5 w-4.5" /> Keluar Admin (Logout)
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
@@ -305,7 +472,7 @@ export default function Dashboard({ state, setActiveTab }: DashboardProps) {
               {upcomingAgenda ? upcomingAgenda.namaAcara : 'Tidak ada agenda'}
             </p>
             <p className="text-xs text-slate-400 mt-1">
-              {upcomingAgenda ? upcomingAgenda.tanggal : '-'}
+              {upcomingAgenda ? formatDate(upcomingAgenda.tanggal) : '-'}
             </p>
           </div>
         </div>
@@ -351,79 +518,38 @@ export default function Dashboard({ state, setActiveTab }: DashboardProps) {
         </div>
       </div>
 
-      {/* Main Row: Chart & Demographic */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recharts Bar Chart */}
-        <div className="lg:col-span-2 p-5 bg-white rounded-2xl border border-slate-100 shadow-2xs">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h2 className="font-display font-bold text-slate-800 tracking-tight flex items-center gap-1.5 text-lg">
-                <TrendingUp className="h-5 w-5 text-emerald-600" /> Arus Keuangan Keluarga (2026)
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">Grafik perbandingan pendapatan dan pengeluaran per bulan</p>
-            </div>
-            <span className="text-xs font-mono bg-emerald-50 text-emerald-800 border border-emerald-100 rounded px-2.5 py-1 font-bold">
-              Saldo: Rp {saldoKas.toLocaleString('id-ID')}
-            </span>
-          </div>
-          
-          <div className="h-72 w-full font-sans">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={financialChartData}
-                margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="bulan" tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 13 }} />
-                <YAxis tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
-                <Tooltip 
-                  formatter={(value: any) => `Rp ${value.toLocaleString('id-ID')}`}
-                  contentStyle={{ background: '#ffffff', borderRadius: 8, borderColor: '#e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                />
-                <Legend iconType="circle" />
-                <Bar dataKey="Pemasukan" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Pengeluaran" fill="#f43f5e" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Demographic & RSVPs Section */}
-        <div className="space-y-6">
+      {/* Main Row: Demographic & Agenda */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* RSVP Status / Next Event Box */}
           <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-2xs flex flex-col justify-between">
             <div>
               <h2 className="font-bold text-slate-800 tracking-tight flex items-center gap-1.5">
-                <Calendar className="h-5 w-5 text-indigo-600" /> Presensi Agenda Terdekat
+                <Calendar className="h-5 w-5 text-indigo-600" /> Agenda Terdekat
               </h2>
               {upcomingAgenda ? (
-                <div className="mt-4">
-                  <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
+                <div className="mt-4 space-y-3">
+                  <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50 space-y-1">
                     <p className="text-sm font-semibold text-indigo-900">{upcomingAgenda.namaAcara}</p>
-                    <p className="text-xs text-indigo-700/80 mt-1 font-mono">📅 {upcomingAgenda.tanggal} &bull; 🕒 {upcomingAgenda.waktu}</p>
+                    <p className="text-xs text-indigo-700/80 font-mono">📅 {formatDate(upcomingAgenda.tanggal)}</p>
                   </div>
                   
-                  <div className="mt-4 space-y-2">
-                    <div className="flex justify-between text-xs text-slate-500 font-medium">
-                      <span>Progres RSVP Kehadiran</span>
-                      <span>{rsvpStats.hadir} Konfirmasi Hadir / {rsvpStats.total} Anggota</span>
-                    </div>
-                    {/* Native visual progress bar */}
-                    <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                      <div 
-                        className="bg-indigo-600 h-2.5 rounded-full" 
-                        style={{ width: `${(rsvpStats.hadir / rsvpStats.total) * 100 || 0}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between items-center text-xs pt-1">
-                      <span className="text-indigo-600 font-semibold">{Math.round((rsvpStats.hadir / rsvpStats.total) * 100) || 0}% Bersedia Datang</span>
-                      <button 
-                        onClick={() => setActiveTab('agenda')}
-                        className="text-[11px] font-bold text-indigo-600 hover:underline"
-                      >
-                        Kelola RSVP &rarr;
-                      </button>
-                    </div>
+                  <div className="text-xs text-slate-600 space-y-1.5 pt-1">
+                    <p>📍 <strong>Lokasi:</strong> {upcomingAgenda.lokasi}</p>
+                    {upcomingAgenda.deskripsi && (
+                      <p className="text-slate-500 italic mt-1 font-normal line-clamp-2">"{upcomingAgenda.deskripsi}"</p>
+                    )}
+                    <span className="block text-[11px] text-slate-400 mt-2">
+                      Penanggungjawab: <strong>{upcomingAgenda.penanggungJawab}</strong>
+                    </span>
+                  </div>
+                  
+                  <div className="pt-2">
+                    <button 
+                      onClick={() => setActiveTab('agenda')}
+                      className="text-xs font-bold text-indigo-600 hover:underline"
+                    >
+                      Lihat Semua Agenda &rarr;
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -434,7 +560,7 @@ export default function Dashboard({ state, setActiveTab }: DashboardProps) {
 
           {/* Demografi & Karakteristik Section */}
           <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-2xs">
-            <h2 className="font-display font-extrabold text-slate-800 text-lg leading-tight mb-4 border-b border-slate-100/60 pb-3">
+            <h2 className="font-sans font-extrabold text-slate-800 text-lg leading-tight mb-4 border-b border-slate-100/60 pb-3">
               Demografi & Karakteristik
             </h2>
             
@@ -485,7 +611,7 @@ export default function Dashboard({ state, setActiveTab }: DashboardProps) {
               <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100/70 flex flex-col items-center justify-center text-center space-y-1">
                 <Cake className="h-5 w-5 text-blue-600 mb-1" />
                 <span className="text-xs font-semibold text-slate-400">Rata-rata Usia</span>
-                <span className="font-display font-bold text-[20px] text-slate-800 tracking-tight leading-none pt-1">
+                <span className="font-sans font-bold text-[20px] text-slate-800 tracking-tight leading-none pt-1">
                   {rataRataUsia} Tahun
                 </span>
               </div>
@@ -494,7 +620,7 @@ export default function Dashboard({ state, setActiveTab }: DashboardProps) {
               <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100/70 flex flex-col items-center justify-center text-center space-y-1">
                 <Skull className="h-5 w-5 text-slate-500 mb-1" />
                 <span className="text-xs font-semibold text-slate-400">Telah Berpulang</span>
-                <span className="font-display font-bold text-[20px] text-slate-800 tracking-tight leading-none pt-1">
+                <span className="font-sans font-bold text-[20px] text-slate-800 tracking-tight leading-none pt-1">
                   {totalWafat} Jiwa
                 </span>
               </div>
@@ -512,41 +638,235 @@ export default function Dashboard({ state, setActiveTab }: DashboardProps) {
               </p>
             </div>
           </div>
-        </div>
       </div>
 
       {/* Row: Historical Timeline */}
       <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-2xs">
-        <h2 className="font-bold text-slate-800 tracking-tight flex items-center gap-1.5 mb-1 text-lg">
-          <Heart className="h-5 w-5 text-rose-500" /> Timeline & Milestones Penting
-        </h2>
-        <p className="text-xs text-slate-400 mb-6">Linimasa peristiwa monumental kelahiran, pernikahan, wafat, dan sejarah keluarga besar Effendi</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-100/60">
+          <div>
+            <h2 className="font-bold text-slate-800 tracking-tight flex items-center gap-1.5 mb-1 text-lg">
+              <Heart className="h-5 w-5 text-rose-500" /> Timeline & Milestones Penting
+            </h2>
+            <p className="text-xs text-slate-400">Linimasa 10 peristiwa monumental terbaru (kelahiran, pernikahan, wafat, dan sejarah keluarga besar)</p>
+          </div>
+          {isWritable && (
+            <button
+              onClick={() => setIsAddingMilestone(true)}
+              className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-xs transition shrink-0"
+            >
+              <Plus className="h-4 w-4" /> Tambah Milestones
+            </button>
+          )}
+        </div>
         
         <div className="relative border-l-2 border-emerald-100 ml-3 pl-6 space-y-6">
-          {timelineEvents.map((ev, index) => (
-            <div key={`${ev.tanggal}-${index}`} className="relative group">
-              {/* Timeline marker */}
-              <div className="absolute -left-[31px] top-1 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white shadow-xs group-hover:scale-135 transition"></div>
-              
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
-                      {ev.tahun}
-                    </span>
-                    {ev.icon}
+          {timelineEvents.map((ev, index) => {
+            const originalCustom = customMilestoneMap.get(ev.id);
+            return (
+              <div key={`${ev.id || ev.tanggal}-${index}`} className="relative group">
+                {/* Timeline marker */}
+                <div className="absolute -left-[31px] top-1 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white shadow-xs group-hover:scale-135 transition"></div>
+                
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1 bg-white pr-2 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+                        {ev.tahun}
+                      </span>
+                      {ev.icon}
+                    </div>
+                    <h4 className="font-bold text-slate-800 text-[15px]">{ev.judul}</h4>
+                    <p className="text-sm text-slate-600">{ev.deskripsi}</p>
                   </div>
-                  <h4 className="font-bold text-slate-800 text-[15px]">{ev.judul}</h4>
-                  <p className="text-sm text-slate-600">{ev.deskripsi}</p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="font-mono text-xs text-slate-400 whitespace-nowrap bg-slate-50 px-2 py-1 rounded">
+                      {formatDate(ev.tanggal)}
+                    </span>
+                    {isWritable && originalCustom && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleStartEdit(originalCustom)}
+                          className="text-slate-400 hover:text-emerald-600 p-1.5 hover:bg-emerald-50 rounded-lg transition-colors"
+                          title="Edit Milestone"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <span className="font-mono text-xs text-slate-400 whitespace-nowrap bg-slate-50 px-2 py-1 rounded">
-                  {new Date(ev.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                </span>
               </div>
-            </div>
-          ))}
+            );
+          })}
+          {timelineEvents.length === 0 && (
+            <p className="text-sm text-slate-400 italic text-center py-4">Belum ada linimasa yang ditampilkan.</p>
+          )}
         </div>
       </div>
+
+      {/* Modal Tambah Milestone */}
+      {isAddingMilestone && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-slate-100 shadow-xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <h3 className="font-extrabold text-slate-800 text-base">Tambah Milestones Penting</h3>
+              <button onClick={() => setIsAddingMilestone(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddMilestone} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Tanggal Peristiwa</label>
+                <input 
+                  type="date" 
+                  required
+                  value={formTanggal}
+                  onChange={(e) => setFormTanggal(e.target.value)}
+                  className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Tipe Peristiwa</label>
+                <select
+                  value={formTipe}
+                  onChange={(e) => setFormTipe(e.target.value as any)}
+                  className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-emerald-500 bg-white"
+                >
+                  <option value="Pernikahan">👰 Pernikahan</option>
+                  <option value="Pindah Rumah">🏡 Pindah Rumah</option>
+                  <option value="Beli Rumah">🔑 Beli Rumah</option>
+                  <option value="Milestone">🏆 Sejarah Keluarga</option>
+                  <option value="Lainnya">✨ Lainnya</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Judul Peristiwa</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="Misal: Pembelian Rumah Utama Kebagusan"
+                  value={formJudul}
+                  onChange={(e) => setFormJudul(e.target.value)}
+                  className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Deskripsi Peristiwa</label>
+                <textarea 
+                  required
+                  rows={3}
+                  placeholder="Ceritakan detail singkat mengenai peristiwa ini..."
+                  value={formDeskripsi}
+                  onChange={(e) => setFormDeskripsi(e.target.value)}
+                  className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-emerald-500"
+                />
+              </div>
+
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddingMilestone(false)}
+                  className="px-4 py-1.5 border border-slate-200 text-slate-500 hover:bg-slate-50 rounded-lg text-xs font-bold transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition"
+                >
+                  Simpan Milestone
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Edit Milestone */}
+      {editingMilestone && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-slate-100 shadow-xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <h3 className="font-extrabold text-slate-800 text-base">Edit Milestone</h3>
+              <button onClick={() => setEditingMilestone(null)} className="text-slate-400 hover:text-slate-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Tanggal Peristiwa</label>
+                <input 
+                  type="date" 
+                  required
+                  value={editTanggal}
+                  onChange={(e) => setEditTanggal(e.target.value)}
+                  className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Tipe Peristiwa</label>
+                <select
+                  value={editTipe}
+                  onChange={(e) => setEditTipe(e.target.value as any)}
+                  className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-emerald-500 bg-white"
+                >
+                  <option value="Pernikahan">👰 Pernikahan</option>
+                  <option value="Pindah Rumah">🏡 Pindah Rumah</option>
+                  <option value="Beli Rumah">🔑 Beli Rumah</option>
+                  <option value="Milestone">🏆 Sejarah Keluarga</option>
+                  <option value="Lainnya">✨ Lainnya</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Judul Peristiwa</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="Misal: Pembelian Rumah Utama Kebagusan"
+                  value={editJudul}
+                  onChange={(e) => setEditJudul(e.target.value)}
+                  className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Deskripsi Peristiwa</label>
+                <textarea 
+                  required
+                  rows={3}
+                  placeholder="Ceritakan detail singkat mengenai peristiwa ini..."
+                  value={editDeskripsi}
+                  onChange={(e) => setEditDeskripsi(e.target.value)}
+                  className="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-emerald-500"
+                />
+              </div>
+
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingMilestone(null)}
+                  className="px-4 py-1.5 border border-slate-200 text-slate-500 hover:bg-slate-50 rounded-lg text-xs font-bold transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition"
+                >
+                  Simpan Perubahan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

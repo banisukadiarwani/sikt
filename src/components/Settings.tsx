@@ -83,7 +83,7 @@ export default function Settings({
                 💼 Bendahara
               </p>
               <p className="text-[11px] text-slate-500 leading-relaxed">
-                Wewenang penuh untuk mencatat keuangan (buku kas masuk & kas keluar), mengunggah bukti transaksi, dan mencetak laporan keuangan. Memiliki akses baca silsilah & dokumen, serta RSVP agenda.
+                Wewenang penuh untuk mencatat keuangan (buku kas masuk & kas keluar), mengunggah bukti transaksi, dan mencetak laporan keuangan. Memiliki akses baca silsilah & dokumen, serta melihat agenda acara.
               </p>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function Settings({
                 👤 Anggota Keluarga
               </p>
               <p className="text-[11px] text-slate-500 leading-relaxed">
-                Akses penelusuran silsilah keluarga, melihat rangkuman saldo kas, mengunggah dokumentasi foto/video kenangan ke album galeri, serta mendaftarkan status RSVP kehadiran agenda keluarga.
+                Akses penelusuran silsilah keluarga, melihat rangkuman saldo kas, mengunggah dokumentasi foto/video kenangan ke album galeri, serta melihat jadwal agenda acara keluarga.
               </p>
             </div>
           </div>

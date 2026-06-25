@@ -12,6 +12,14 @@ import {
 
 const LOCAL_STORAGE_KEY = 'sikt_app_state';
 
+export const GUEST_USER: User = {
+  id: 'guest',
+  nama: 'Tamu (Guest)',
+  email: 'guest@keluarga.com',
+  role: 'Guest',
+  status: 'Aktif'
+};
+
 // Initial default state
 const initialDefaultState: SIKTState = {
   users: SEED_USERS,
@@ -22,7 +30,7 @@ const initialDefaultState: SIKTState = {
   pesertaAcara: SEED_PESERTA,
   galeri: SEED_GALERI,
   dokumen: SEED_DOKUMEN,
-  currentUser: SEED_USERS[0], // Budi Effendi (Administrator)
+  currentUser: GUEST_USER, // Guest is default
   appsScriptUrl: '',
   googleDriveFolderId: '',
 };

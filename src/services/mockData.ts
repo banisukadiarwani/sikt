@@ -3,21 +3,21 @@ import { User, AnggotaKeluarga, KasMasuk, KasKeluar, Agenda, PesertaAcara, Galer
 export const SEED_USERS: User[] = [
   {
     id: 'u_1',
-    nama: 'Budi Effendi',
+    nama: 'Budi Sukadi Arwani',
     email: 'budi@keluarga.com',
     role: 'Administrator',
     status: 'Aktif',
   },
   {
     id: 'u_2',
-    nama: 'Dewi Effendi',
+    nama: 'Dewi Sukadi Arwani',
     email: 'dewi@keluarga.com',
     role: 'Bendahara',
     status: 'Aktif',
   },
   {
     id: 'u_3',
-    nama: 'Aditya Effendi',
+    nama: 'Aditya Sukadi Arwani',
     email: 'aditya@keluarga.com',
     role: 'Anggota',
     status: 'Aktif',
@@ -28,7 +28,7 @@ export const SEED_ANGGOTA: AnggotaKeluarga[] = [
   // Generasi 1 (Kakek & Nenek)
   {
     id: 'A1',
-    nama: 'Rustam Effendi (Alm)',
+    nama: 'Rustam Sukadi Arwani (Alm)',
     gender: 'Laki-laki',
     tempatLahir: 'Yogyakarta',
     tanggalLahir: '1942-04-12',
@@ -61,7 +61,7 @@ export const SEED_ANGGOTA: AnggotaKeluarga[] = [
   // Generasi 2 (Anak-anak Rustam & Siti)
   {
     id: 'A3',
-    nama: 'Budi Effendi',
+    nama: 'Budi Sukadi Arwani',
     gender: 'Laki-laki',
     tempatLahir: 'Yogyakarta',
     tanggalLahir: '1970-05-15',
@@ -91,7 +91,7 @@ export const SEED_ANGGOTA: AnggotaKeluarga[] = [
   },
   {
     id: 'A5',
-    nama: 'Dewi Effendi',
+    nama: 'Dewi Sukadi Arwani',
     gender: 'Perempuan',
     tempatLahir: 'Yogyakarta',
     tanggalLahir: '1974-09-21',
@@ -121,7 +121,7 @@ export const SEED_ANGGOTA: AnggotaKeluarga[] = [
   },
   {
     id: 'A7',
-    nama: 'Ahmad Effendi',
+    nama: 'Ahmad Sukadi Arwani',
     gender: 'Laki-laki',
     tempatLahir: 'Yogyakarta',
     tanggalLahir: '1979-07-08',
@@ -154,7 +154,7 @@ export const SEED_ANGGOTA: AnggotaKeluarga[] = [
   // Anak Budi & Rina
   {
     id: 'A9',
-    nama: 'Aditya Effendi',
+    nama: 'Aditya Sukadi Arwani',
     gender: 'Laki-laki',
     tempatLahir: 'Jakarta',
     tanggalLahir: '1995-02-18',
@@ -184,7 +184,7 @@ export const SEED_ANGGOTA: AnggotaKeluarga[] = [
   },
   {
     id: 'A11',
-    nama: 'Citra Effendi',
+    nama: 'Citra Sukadi Arwani',
     gender: 'Perempuan',
     tempatLahir: 'Jakarta',
     tanggalLahir: '1999-10-05',
@@ -231,7 +231,7 @@ export const SEED_ANGGOTA: AnggotaKeluarga[] = [
   // Anak Ahmad & Sarah
   {
     id: 'A14',
-    nama: 'Kevin Effendi',
+    nama: 'Kevin Sukadi Arwani',
     gender: 'Laki-laki',
     tempatLahir: 'Surabaya',
     tanggalLahir: '2011-04-14',
@@ -249,7 +249,7 @@ export const SEED_ANGGOTA: AnggotaKeluarga[] = [
   // Anak Aditya & Amanda
   {
     id: 'A15',
-    nama: 'Dian Effendi',
+    nama: 'Dian Sukadi Arwani',
     gender: 'Perempuan',
     tempatLahir: 'Depok',
     tanggalLahir: '2023-01-10',
@@ -269,7 +269,7 @@ export const SEED_KAS_MASUK: KasMasuk[] = [
     id: 'KM_1',
     tanggal: '2026-01-05',
     kategori: 'Iuran Bulanan',
-    sumber: 'Budi Effendi',
+    sumber: 'Budi Sukadi Arwani',
     nominal: 500000,
     keterangan: 'Iuran semester 1 keluarga Budi',
     bukti: 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&w=300&q=80',
@@ -278,7 +278,7 @@ export const SEED_KAS_MASUK: KasMasuk[] = [
     id: 'KM_2',
     tanggal: '2026-01-08',
     kategori: 'Iuran Bulanan',
-    sumber: 'Dewi Effendi',
+    sumber: 'Dewi Sukadi Arwani',
     nominal: 500000,
     keterangan: 'Iuran semester 1 keluarga Dewi',
     bukti: '',
@@ -287,7 +287,7 @@ export const SEED_KAS_MASUK: KasMasuk[] = [
     id: 'KM_3',
     tanggal: '2026-01-12',
     kategori: 'Iuran Bulanan',
-    sumber: 'Ahmad Effendi',
+    sumber: 'Ahmad Sukadi Arwani',
     nominal: 500000,
     keterangan: 'Iuran semester 1 keluarga Ahmad',
     bukti: '',
@@ -314,7 +314,7 @@ export const SEED_KAS_MASUK: KasMasuk[] = [
     id: 'KM_6',
     tanggal: '2026-05-20',
     kategori: 'Iuran Bulanan',
-    sumber: 'Aditya Effendi',
+    sumber: 'Aditya Sukadi Arwani',
     nominal: 250000,
     keterangan: 'Iuran semester 1 keluarga Aditya',
     bukti: '',
@@ -335,7 +335,7 @@ export const SEED_KAS_KELUAR: KasKeluar[] = [
     tanggal: '2026-02-25',
     kategori: 'Operasional',
     nominal: 1500000,
-    keterangan: 'Renovasi nisan Almarhum Rustam Effendi',
+    keterangan: 'Renovasi nisan Almarhum Rustam Sukadi Arwani',
     bukti: '',
   },
   {
@@ -363,17 +363,17 @@ export const SEED_AGENDA: Agenda[] = [
     tanggal: '2026-07-12',
     waktu: '10:00',
     lokasi: 'Jl. Malioboro No. 45, Yogyakarta (Rumah Ibu Siti Aminah)',
-    deskripsi: 'Pertemuan rutin silarutahmi keluarga besar Effendi, arisan triwulanan, sekaligus makan siang bersama & pembagian kaos keluarga.',
-    penanggungJawab: 'Dewi Effendi',
+    deskripsi: 'Pertemuan rutin silarutahmi keluarga besar Sukadi Arwani, arisan triwulanan, sekaligus makan siang bersama & pembagian kaos keluarga.',
+    penanggungJawab: 'Dewi Sukadi Arwani',
   },
   {
     id: 'AG_2',
     namaAcara: 'Peringatan 6 Tahun Wafatnya Kakek Rustam',
     tanggal: '2026-11-05',
     waktu: '18:30',
-    lokasi: 'Jl. Kebagusan No. 12, Jakarta Selatan (Rumah Budi Effendi) & Zoom',
-    deskripsi: 'Tahlilan bersama, doa, dan sedekah keluarga memperingati wafatnya Kakek tercinta Rustam Effendi.',
-    penanggungJawab: 'Budi Effendi',
+    lokasi: 'Jl. Kebagusan No. 12, Jakarta Selatan (Rumah Budi Sukadi Arwani) & Zoom',
+    deskripsi: 'Tahlilan bersama, doa, dan sedekah keluarga memperingati wafatnya Kakek tercinta Rustam Sukadi Arwani.',
+    penanggungJawab: 'Budi Sukadi Arwani',
   },
   {
     id: 'AG_3',
@@ -381,34 +381,34 @@ export const SEED_AGENDA: Agenda[] = [
     tanggal: '2026-12-25',
     waktu: '08:00',
     lokasi: 'Nusa Dua, Bali',
-    deskripsi: 'Liburan tahunan keluarga besar, menginap bersama di Villa Seminyak dan acara BBQ silsilah keluarga.',
-    penanggungJawab: 'Ahmad Effendi',
+    deskripsi: 'Liburan tahunan keluarga besar, menginap bersama di Villa Seminyak and acara BBQ silsilah keluarga.',
+    penanggungJawab: 'Ahmad Sukadi Arwani',
   }
 ];
 
 export const SEED_PESERTA: PesertaAcara[] = [
   // Agenda 1
   { id: 'P1', agendaId: 'AG_1', anggotaId: 'A2', anggotaNama: 'Siti Aminah', statusHadir: 'Hadir' },
-  { id: 'P2', agendaId: 'AG_1', anggotaId: 'A3', anggotaNama: 'Budi Effendi', statusHadir: 'Hadir' },
+  { id: 'P2', agendaId: 'AG_1', anggotaId: 'A3', anggotaNama: 'Budi Sukadi Arwani', statusHadir: 'Hadir' },
   { id: 'P3', agendaId: 'AG_1', anggotaId: 'A4', anggotaNama: 'Rina Kartika', statusHadir: 'Hadir' },
-  { id: 'P4', agendaId: 'AG_1', anggotaId: 'A5', anggotaNama: 'Dewi Effendi', statusHadir: 'Hadir' },
+  { id: 'P4', agendaId: 'AG_1', anggotaId: 'A5', anggotaNama: 'Dewi Sukadi Arwani', statusHadir: 'Hadir' },
   { id: 'P5', agendaId: 'AG_1', anggotaId: 'A6', anggotaNama: 'Hendra Wijaya', statusHadir: 'Hadir' },
-  { id: 'P6', agendaId: 'AG_1', anggotaId: 'A7', anggotaNama: 'Ahmad Effendi', statusHadir: 'Hadir' },
+  { id: 'P6', agendaId: 'AG_1', anggotaId: 'A7', anggotaNama: 'Ahmad Sukadi Arwani', statusHadir: 'Hadir' },
   { id: 'P7', agendaId: 'AG_1', anggotaId: 'A8', anggotaNama: 'Sarah Lestari', statusHadir: 'Hadir' },
-  { id: 'P8', agendaId: 'AG_1', anggotaId: 'A9', anggotaNama: 'Aditya Effendi', statusHadir: 'Hadir' },
+  { id: 'P8', agendaId: 'AG_1', anggotaId: 'A9', anggotaNama: 'Aditya Sukadi Arwani', statusHadir: 'Hadir' },
   { id: 'P9', agendaId: 'AG_1', anggotaId: 'A10', anggotaNama: 'Amanda Putri', statusHadir: 'Hadir' },
-  { id: 'P10', agendaId: 'AG_1', anggotaId: 'A11', anggotaNama: 'Citra Effendi', statusHadir: 'Absen' },
+  { id: 'P10', agendaId: 'AG_1', anggotaId: 'A11', anggotaNama: 'Citra Sukadi Arwani', statusHadir: 'Absen' },
   { id: 'P11', agendaId: 'AG_1', anggotaId: 'A12', anggotaNama: 'Rio Wijaya', statusHadir: 'Hadir' },
   { id: 'P12', agendaId: 'AG_1', anggotaId: 'A13', anggotaNama: 'Sekar Wijaya', statusHadir: 'Hadir' },
-  { id: 'P13', agendaId: 'AG_1', anggotaId: 'A14', anggotaNama: 'Kevin Effendi', statusHadir: 'Ragu-ragu' },
-  { id: 'P14', agendaId: 'AG_1', anggotaId: 'A15', anggotaNama: 'Dian Effendi', statusHadir: 'Hadir' },
+  { id: 'P13', agendaId: 'AG_1', anggotaId: 'A14', anggotaNama: 'Kevin Sukadi Arwani', statusHadir: 'Ragu-ragu' },
+  { id: 'P14', agendaId: 'AG_1', anggotaId: 'A15', anggotaNama: 'Dian Sukadi Arwani', statusHadir: 'Hadir' },
 
   // Agenda 2
   { id: 'P15', agendaId: 'AG_2', anggotaId: 'A2', anggotaNama: 'Siti Aminah', statusHadir: 'Hadir' },
-  { id: 'P16', agendaId: 'AG_2', anggotaId: 'A3', anggotaNama: 'Budi Effendi', statusHadir: 'Hadir' },
-  { id: 'P17', agendaId: 'AG_2', anggotaId: 'A5', anggotaNama: 'Dewi Effendi', statusHadir: 'Belum RSVP' },
-  { id: 'P18', agendaId: 'AG_2', anggotaId: 'A7', anggotaNama: 'Ahmad Effendi', statusHadir: 'Hadir' },
-  { id: 'P19', agendaId: 'AG_2', anggotaId: 'A9', anggotaNama: 'Aditya Effendi', statusHadir: 'Belum RSVP' }
+  { id: 'P16', agendaId: 'AG_2', anggotaId: 'A3', anggotaNama: 'Budi Sukadi Arwani', statusHadir: 'Hadir' },
+  { id: 'P17', agendaId: 'AG_2', anggotaId: 'A5', anggotaNama: 'Dewi Sukadi Arwani', statusHadir: 'Belum RSVP' },
+  { id: 'P18', agendaId: 'AG_2', anggotaId: 'A7', anggotaNama: 'Ahmad Sukadi Arwani', statusHadir: 'Hadir' },
+  { id: 'P19', agendaId: 'AG_2', anggotaId: 'A9', anggotaNama: 'Aditya Sukadi Arwani', statusHadir: 'Belum RSVP' }
 ];
 
 export const SEED_GALERI: Galeri[] = [
@@ -419,7 +419,7 @@ export const SEED_GALERI: Galeri[] = [
     judul: 'Foto Bersama Keluarga Besar 2025',
     fileUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=600&q=80',
     fileType: 'image',
-    uploader: 'Aditya Effendi',
+    uploader: 'Aditya Sukadi Arwani',
     tanggalUpload: '2025-06-15',
   },
   {
@@ -439,7 +439,7 @@ export const SEED_GALERI: Galeri[] = [
     judul: 'Cucu dan Cicit Bermain Bersama',
     fileUrl: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80',
     fileType: 'image',
-    uploader: 'Dewi Effendi',
+    uploader: 'Dewi Sukadi Arwani',
     tanggalUpload: '2025-06-16',
   }
 ];
@@ -450,7 +450,7 @@ export const SEED_DOKUMEN: DocumentRecord[] = [
     namaDokumen: 'Laporan_Keuangan_Keluarga_2025.pdf',
     kategori: 'Laporan Keuangan',
     fileUrl: '#',
-    uploader: 'Dewi Effendi',
+    uploader: 'Dewi Sukadi Arwani',
     tanggalUpload: '2025-12-31',
   },
   {
@@ -458,15 +458,15 @@ export const SEED_DOKUMEN: DocumentRecord[] = [
     namaDokumen: 'Notulen_Rapat_Liburan_Bali_2026.pdf',
     kategori: 'Notulen Semenjak',
     fileUrl: '#',
-    uploader: 'Budi Effendi',
+    uploader: 'Budi Sukadi Arwani',
     tanggalUpload: '2026-04-12',
   },
   {
     id: 'D3',
-    namaDokumen: 'Buku_Silsilah_Silsilah_Rustam_Effendi_v2.pdf',
+    namaDokumen: 'Buku_Silsilah_Silsilah_Rustam_Sukadi_Arwani_v2.pdf',
     kategori: 'Buku Silsilah',
     fileUrl: '#',
-    uploader: 'Aditya Effendi',
+    uploader: 'Aditya Sukadi Arwani',
     tanggalUpload: '2026-05-01',
   }
 ];

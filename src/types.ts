@@ -1,4 +1,4 @@
-export type Role = 'Administrator' | 'Bendahara' | 'Anggota';
+export type Role = 'Administrator' | 'Bendahara' | 'Anggota' | 'Guest';
 
 export interface User {
   id: string;
@@ -83,6 +83,14 @@ export interface DocumentRecord {
   tanggalUpload: string; // YYYY-MM-DD
 }
 
+export interface CustomMilestone {
+  id: string;
+  tanggal: string; // YYYY-MM-DD
+  tipe: 'Pernikahan' | 'Pindah Rumah' | 'Beli Rumah' | 'Milestone' | 'Lainnya';
+  judul: string;
+  deskripsi: string;
+}
+
 export interface SIKTState {
   users: User[];
   anggota: AnggotaKeluarga[];
@@ -92,6 +100,9 @@ export interface SIKTState {
   pesertaAcara: PesertaAcara[];
   galeri: Galeri[];
   dokumen: DocumentRecord[];
+  customMilestones?: CustomMilestone[];
+  deletedMilestoneIds?: string[];
+  customAlbums?: { id: string; nama: string; tipe: 'acara' | 'tahun' | 'lainnya' }[];
   
   // App Config
   currentUser: User | null;

@@ -2,6 +2,28 @@ import React, { useState, useMemo } from 'react';
 import { SIKTState, DocumentRecord } from '../types';
 import { FileText, Plus, Search, Filter, Download, User, Calendar, Trash2, X, AlertCircle } from 'lucide-react';
 
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const cleanDateStr = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr.trim();
+  const parts = cleanDateStr.split('-');
+  if (parts.length === 3) {
+    if (parts[0].length === 4) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return cleanDateStr;
+  }
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  } catch (e) {}
+  return dateStr;
+};
+
 interface ArsipDokumenProps {
   state: SIKTState;
   onUpdateState: (newState: SIKTState) => void;
@@ -9,7 +31,7 @@ interface ArsipDokumenProps {
 
 export default function ArsipDokumen({ state, onUpdateState }: ArsipDokumenProps) {
   const { dokumen } = state;
-  const isWritable = state.currentUser?.role === 'Administrator' || state.currentUser?.role === 'Bendahara';
+  const isWritable = state.currentUser?.role === 'Administrator';
 
   // Filters
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -18,6 +40,7 @@ export default function ArsipDokumen({ state, onUpdateState }: ArsipDokumenProps
   // Dialog State
   const [isAddingDoc, setIsAddingDoc] = useState(false);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [docToDelete, setDocToDelete] = useState<{ id: string; nama: string } | null>(null);
 
   // Form State
   const [formDoc, setFormDoc] = useState({
@@ -99,11 +122,16 @@ export default function ArsipDokumen({ state, onUpdateState }: ArsipDokumenProps
   };
 
   const handleDeleteDoc = (id: string, name: string) => {
-    if (window.confirm(`Konfirmasi: Apakah Anda yakin ingin menghapus arsip dokumen "${name}"?`)) {
+    setDocToDelete({ id, nama: name });
+  };
+
+  const confirmDeleteDoc = () => {
+    if (docToDelete) {
       onUpdateState({
         ...state,
-        dokumen: dokumen.filter(d => d.id !== id)
+        dokumen: dokumen.filter(d => d.id !== docToDelete.id)
       });
+      setDocToDelete(null);
     }
   };
 
@@ -175,7 +203,7 @@ export default function ArsipDokumen({ state, onUpdateState }: ArsipDokumenProps
               <div className="pt-3 border-t border-dashed border-slate-100 flex flex-col space-y-2.5 text-[11px] text-slate-400">
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-1 font-medium"><User className="h-3.5 w-3.5 text-slate-400 shrink-0" /> {doc.uploader}</span>
-                  <span className="font-mono flex items-center gap-1"><Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" /> {doc.tanggalUpload}</span>
+                  <span className="font-mono flex items-center gap-1"><Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" /> {formatDate(doc.tanggalUpload)}</span>
                 </div>
 
                 {/* Downloads trigger button */}
@@ -233,7 +261,7 @@ export default function ArsipDokumen({ state, onUpdateState }: ArsipDokumenProps
             {/* Document sheet mockup */}
             <div className="p-8 bg-slate-100 max-h-[420px] overflow-y-auto space-y-6 font-serif text-slate-800 text-xs shadow-inner">
               <center className="space-y-1">
-                <h2 className="text-sm font-bold uppercase tracking-widest leading-normal">Keluarga Besar Rustam Effendi</h2>
+                <h2 className="text-sm font-bold uppercase tracking-widest leading-normal">Keluarga Besar Rustam Sukadi Arwani</h2>
                 <p className="text-[10px] font-sans text-slate-400 uppercase font-semibold">Sekretariat Bersama: Jl. Malioboro No. 45, D.I. Yogyakarta</p>
                 <hr className="border-t-2 border-double border-slate-800 my-2" />
               </center>
@@ -244,15 +272,15 @@ export default function ArsipDokumen({ state, onUpdateState }: ArsipDokumenProps
                 <p className="font-sans text-[10px]">Perihal: <strong>Undangan Musyawarah Semesteran &amp; Pembukuan Arisan</strong></p>
                 <div className="pt-4">
                   <p>Kepada Yth,</p>
-                  <p className="font-bold">Segenap Anggota Keluarga Besar Rustam Effendi</p>
+                  <p className="font-bold">Segenap Anggota Keluarga Besar Rustam Sukadi Arwani</p>
                   <p>di Tempat / Kediaman Masing-masing</p>
                 </div>
                 <p className="pt-4">Dengan hormat,</p>
                 <p>
-                  Melalui surat ini kami selaku pengurus mengundang segenap bapak, ibu, kakak dan adik dari keluarga besar Rustam Effendi untuk dapat menghadiri pertemuan berkala yang akan dilangsungkan dalam rangka mempererat silaturahmi, pertaruhan berkah arisan bersama, serta pelaporan keuangan kas semesteran berjalan.
+                  Melalui surat ini kami selaku pengurus mengundang segenap bapak, ibu, kakak dan adik dari keluarga besar Rustam Sukadi Arwani untuk dapat menghadiri pertemuan berkala yang akan dilangsungkan dalam rangka mempererat silaturahmi, pertaruhan berkah arisan bersama, serta pelaporan keuangan kas semesteran berjalan.
                 </p>
                 <p>
-                  Rincian acara, RSVPs kehadiran digital, rujukan map lokasi, serta anggaran belanja dapat dikoordinasikan secara penuh dan transparan melalui Portal Utama <strong>Sistem Informasi Keluarga Terpadu (SIKT)</strong>.
+                  Rincian acara, rujukan map lokasi, serta anggaran belanja dapat dikoordinasikan secara penuh dan transparan melalui Portal Utama <strong>Sistem Informasi Keluarga Terpadu (SIKT)</strong>.
                 </p>
                 <p className="pt-4">Demikian undangan ini kami sampaikan, atas kehadiran dan dukungan gotong royong segenap keluarga kami ucapkan terima kasih.</p>
               </div>
@@ -261,7 +289,7 @@ export default function ArsipDokumen({ state, onUpdateState }: ArsipDokumenProps
                 <div></div>
                 <div className="space-y-10">
                   <p>Hormat kami,</p>
-                  <p className="font-bold underline">Budi Effendi</p>
+                  <p className="font-bold underline">Budi Sukadi Arwani</p>
                 </div>
               </div>
             </div>
@@ -332,6 +360,43 @@ export default function ArsipDokumen({ state, onUpdateState }: ArsipDokumenProps
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOM CONFIRMATION MODAL FOR DELETING DOCUMENT */}
+      {docToDelete && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full border shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150">
+            <div className="border-b px-5 py-4 flex justify-between items-center bg-slate-50">
+              <h3 className="font-bold text-slate-800 flex items-center gap-1.5 text-sm">
+                <AlertCircle className="h-5 w-5 text-rose-500" /> Konfirmasi Hapus Arsip
+              </h3>
+              <button onClick={() => setDocToDelete(null)} className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Apakah Anda yakin ingin menghapus dokumen <strong className="text-slate-800 font-bold">"{docToDelete.nama}"</strong> dari arsip keluarga besar? Tindakan ini tidak dapat dibatalkan.
+              </p>
+              <div className="pt-4 flex gap-3 border-t">
+                <button 
+                  type="button" 
+                  onClick={() => setDocToDelete(null)} 
+                  className="flex-1 py-1.5 text-xs font-bold text-slate-500 border rounded-xl hover:bg-slate-50"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="button"
+                  onClick={confirmDeleteDoc}
+                  className="flex-1 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl"
+                >
+                  Ya, Hapus
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
